@@ -110,7 +110,7 @@ connect:
 
     # Annotations to add to service. (Optional)
     annotations: {}
-      # external-dns.alpha.kubernetes.io/hostname: service.asgard.swvl.io
+      # external-dns.alpha.kubernetes.io/hostname: service.example.io
 
     # Service ports
     ports:
@@ -211,7 +211,7 @@ schemaRegistry:
 
     # Annotations to add to service. (Optional)
     annotations: {}
-      # external-dns.alpha.kubernetes.io/hostname: service.asgard.swvl.io
+      # external-dns.alpha.kubernetes.io/hostname: service.example.io
 
     # Service ports
     ports:
@@ -230,7 +230,7 @@ ingress:
   path: /
   hosts:
     # [{{subdomain.value}}.]{{zone}}
-    - zone: asgard.swvl.io
+    - zone: example.com
       subdomain:
         enabled: true
         # value defaults to fullname if not specified
