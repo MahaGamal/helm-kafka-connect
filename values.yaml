@@ -1,0 +1,239 @@
+# Default values for kafka-connect
+
+# nameOverride: ""
+# fullnameOverride: ""
+
+# Configuration for connect deployment
+connect:
+  ## Image Info
+  ## ref: https://hub.docker.com/r/confluentinc/cp-kafka/
+  image: confluentinc/cp-kafka-connect
+  imageTag: 5.0.0
+
+  ## Specify a imagePullPolicy
+  ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+  imagePullPolicy: IfNotPresent
+
+  # Number of replicas (Required)
+  replicaCount: 1
+
+  # Server container port (Required)
+  servicePort: 8083
+
+  # How kubernetes determines when the server is ready and if it's still alive (Suggested)
+  health:
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: http
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: http
+
+  # Requested resources and limits for the server (Suggested)
+  resources: {}
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  # Pass custom command. Defaults to docker image ENTRYPOINT (Optional)
+  command: []
+
+  # Pass custom args. Defaults to docker image CMD (Optional)
+  args: []
+
+  # Constraints how pods should be spread across nodes
+  # valid values:
+  # - ""     (no constraints)
+  # - "soft" (tries to spread the pods if possible)
+  # - "hard" (forces the pods to be spread)
+  antiAffinity: ""
+
+  # The deployment strategy to use to replace existing pods with new ones. (Optional)
+  updateStrategy: {}
+    # rollingUpdate:
+    #   maxUnavailable: 1
+    # type: RollingUpdate
+
+  # Annotations to add to server pods. (Optional)
+  podAnnotations: {}
+    # fluentbit.io/parser: nginx-ingress
+
+  # Labels to add to server pods. (Optional)
+  podLabels: {}
+    # stack: node
+
+  # Which nodes should the server run on. (Suggested)
+  nodeSelector: {}
+    # environment: dev
+
+  # https://kubernetes.io/docs/concepts/configuration/taint-and-toleration. (Optional)
+  tolerations: []
+    # - key: "instancegroup"
+    #   operation: "Equal"
+    #   value: "dev"
+
+  # Server environment variables. (Optional)
+  # values can contain go templates
+
+  ## Kafka Connect properties
+  ## ref: https://docs.confluent.io/current/connect/userguide.html#configuring-services
+  configurationOverrides:
+    "plugin.path": "/usr/share/java,/usr/share/confluent-hub-components"
+    "key.converter": "io.confluent.connect.avro.AvroConverter"
+    "value.converter": "io.confluent.connect.avro.AvroConverter"
+    "key.converter.schemas.enable": "false"
+    "value.converter.schemas.enable": "false"
+    "internal.key.converter": "org.apache.kafka.connect.json.JsonConverter"
+    "internal.value.converter": "org.apache.kafka.connect.json.JsonConverter"
+    "config.storage.replication.factor": "3"
+    "offset.storage.replication.factor": "3"
+    "status.storage.replication.factor": "3"
+
+  ## Kafka Connect JVM Heap Option
+  heapOptions: "-Xms512M -Xmx512M"
+
+  ## Additional env variables
+  customEnv: {}
+    # KEY: val
+    # URL: value-{{ .Release.Prefix }}
+
+
+  # connect Service configuration
+  service:
+    # Service type (ClusterIP, NodePort, LoadBalancer)
+    type: ClusterIP
+
+    # Annotations to add to service. (Optional)
+    annotations: {}
+      # external-dns.alpha.kubernetes.io/hostname: service.asgard.swvl.io
+
+    # Service ports
+    ports:
+      http:
+        # Exposed service port
+        port: 80
+        # Container port
+        targetPort: http
+
+
+# Configuration for schemaRegistry deployment
+schemaRegistry:
+  enabled: true
+  
+  image: confluentinc/cp-kafka-connect
+  imageTag: 5.3.1
+
+  ## Specify a imagePullPolicy
+  ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+  imagePullPolicy: IfNotPresent
+  # Number of replicas (Required)
+  replicaCount: 1
+  
+  servicePort: 8081
+
+  # How kubernetes determines when the service is ready and if it's still alive (Optional)
+  health: {}
+    # readinessProbe:
+    #   exec:
+    #     command:
+    #     - cat
+    #     - /tmp/ready
+    # livenessProbe:
+    #   exec:
+    #     command:
+    #     - cat
+    #     - /tmp/healthy
+
+  # Requested resources and limits for the service (Suggested)
+  resources: {}
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  # Pass custom command. Defaults to docker image ENTRYPOINT (Suggested)
+  command: []
+
+  # Pass custom args. Defaults to docker image CMD (Suggested)
+  args: []
+
+  # Constraints how pods should be spread across nodes
+  # valid values:
+  # - ""     (no constraints)
+  # - "soft" (tries to spread the pods if possible)
+  # - "hard" (forces the pods to be spread)
+  antiAffinity: ""
+
+  # The deployment strategy to use to replace existing pods with new ones. (Optional)
+  updateStrategy: {}
+    # rollingUpdate:
+    #   maxUnavailable: 1
+    # type: RollingUpdate
+
+  # Annotations to add to service pods. (Optional)
+  podAnnotations: {}
+    # fluentbit.io/parser: nginx-ingress
+
+  # Labels to add to service pods. (Optional)
+  podLabels: {}
+    # stack: node
+
+  # Which nodes should the service run on. (Suggested)
+  nodeSelector: {}
+    # environment: dev
+
+  # https://kubernetes.io/docs/concepts/configuration/taint-and-toleration. (Optional)
+  tolerations: []
+    # - key: "instancegroup"
+    #   operation: "Equal"
+    #   value: "dev"
+
+  ## env variables
+  configurationOverrides:
+    "kafkastore.connection.url": ""
+
+  ## Additional env variables
+  customEnv: {}
+    # KEY: val
+    # URL: value-{{ .Release.Prefix }}
+
+  # schemaRegistry Service configuration
+  service:
+    # Service type (ClusterIP, NodePort, LoadBalancer)
+    type: ClusterIP
+
+    # Annotations to add to service. (Optional)
+    annotations: {}
+      # external-dns.alpha.kubernetes.io/hostname: service.asgard.swvl.io
+
+    # Service ports
+    ports:
+      http:
+        # Exposed service port
+        port: 8081
+        # Container port
+        targetPort: http
+
+# Ingress configuration
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  path: /
+  hosts:
+    # [{{subdomain.value}}.]{{zone}}
+    - zone: asgard.swvl.io
+      subdomain:
+        enabled: true
+        # value defaults to fullname if not specified
+        value: ""
+  ## If provided in format of "user:password" will add basic auth
+  # basicAuth: "username:password"

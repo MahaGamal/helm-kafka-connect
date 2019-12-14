@@ -1,0 +1,15 @@
+apiVersion: v1
+description: A Helm chart for kafka connect and schama registry 
+name: kafka-connect
+version: 0.1.0
+appVersion: 5.0.0
+keywords:
+- schema registry
+- kafka connect
+home: https://kafka.apache.org/
+sources:
+- https://github.com/confluentinc/cp-docker-images
+- https://github.com/apache/kafka
+maintainers:
+- name: maha gamal
+  email: mohaamer5@gmail.com

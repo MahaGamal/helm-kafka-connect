@@ -1,0 +1,7 @@
+## Example dependencies:
+dependencies:
+#   - name: "kafka"
+#     alias: "kafka"
+#     version: 3.6.4
+#     repository: https://kubernetes-charts.storage.googleapis.com
+#     condition: kafka.enabled

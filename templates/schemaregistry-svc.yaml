@@ -1,0 +1,29 @@
+{{- if .Values.schemaRegistry.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kafka-connect.releasePrefix" . }}-schemaregistry
+  labels:
+    app: {{ include "kafka-connect.name" . }}
+    chart: {{ include "kafka-connect.chart" . }}
+    release: {{ .Release.Name }}
+    helm.sh/chart: {{ include "kafka-connect.chart" . }}
+    app.kubernetes.io/name: schemaregistry
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with .Values.schemaRegistry.service.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  type: {{ .Values.schemaRegistry.service.type }}
+  ports:
+  {{- range $key, $value := .Values.schemaRegistry.service.ports }}
+    - name: {{ $key }}
+      {{- toYaml $value | nindent 6 }}
+  {{- end }}
+  selector:
+    app.kubernetes.io/name: schemaregistry
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: server
+{{- end }}

@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kafka-connect.fullname" . }}
+  labels:
+    app: {{ include "kafka-connect.name" . }}
+    chart: {{ include "kafka-connect.chart" . }}
+    release: {{ .Release.Name }}
+    helm.sh/chart: {{ include "kafka-connect.chart" . }}
+    app.kubernetes.io/name: {{ include "kafka-connect.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with .Values.connect.service.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  type: {{ .Values.connect.service.type }}
+  ports:
+  {{- range $key, $value := .Values.connect.service.ports }}
+    - name: {{ $key }}
+      {{- toYaml $value | nindent 6 }}
+  {{- end }}
+  selector:
+    app.kubernetes.io/name: {{ include "kafka-connect.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: server

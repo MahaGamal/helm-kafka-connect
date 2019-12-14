@@ -1,0 +1,125 @@
+{{- if .Values.schemaRegistry.enabled -}}
+{{- $releasePrefix := include "kafka-connect.releasePrefix" . -}}
+{{- $_ := set $.Release "Prefix" $releasePrefix }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
+apiVersion: apps/v1
+{{- else }}
+apiVersion: apps/v1beta2
+{{- end }}
+kind: Deployment
+metadata:
+  name: {{ include "kafka-connect.releasePrefix" . }}-schemaregistry
+  labels:
+    app: {{ include "kafka-connect.name" . }}
+    chart: {{ include "kafka-connect.chart" . }}
+    release: {{ .Release.Name }}
+    helm.sh/chart: {{ include "kafka-connect.chart" . }}
+    app.kubernetes.io/name: schemaregistry
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: schemaRegistry
+spec:
+  replicas: {{ .Values.schemaRegistry.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: schemaregistry
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: schemaRegistry
+{{- with .Values.schemaRegistry.updateStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "kafka-connect.name" . }}
+        chart: {{ include "kafka-connect.chart" . }}
+        release: {{ .Release.Name }}
+        helm.sh/chart: {{ include "kafka-connect.chart" . }}
+        app.kubernetes.io/name: schemaregistry
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: schemaRegistry
+      {{- with .Values.schemaRegistry.podLabels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.schemaRegistry.podAnnotations }}
+      annotations:
+      {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    {{- end }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.schemaRegistry.image }}:{{ .Values.schemaRegistry.imageTag }}"
+          imagePullPolicy: {{ .Values.schemaRegistry.imagePullPolicy }}
+        {{- with .Values.connect.command }}
+          command:
+            {{- . | toYaml | nindent 12 }}
+        {{- end }}
+        {{- with .Values.connect.args }}
+          args:
+            {{- . | toYaml | nindent 12 }}
+        {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.schemaRegistry.servicePort }}
+              protocol: TCP
+        {{- with .Values.schemaRegistry.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.schemaRegistry.health.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.schemaRegistry.health.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+          env:
+            - name: SCHEMA_REGISTRY_ADVERTISED_HOST_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP        
+            {{- range $key, $value := .Values.schemaRegistry.configurationOverrides }}
+            - name: {{ printf "SCHEMA_REGISTRY_%s" $key | replace "." "_" | upper | quote }}
+              value: {{ tpl $value $ | quote }}
+            {{- end }}
+            {{- range $key, $value := .Values.schemaRegistry.customEnv }}
+            - name: {{ $key | quote }}
+              value: {{ tpl $value $ | quote }}
+            {{- end }}
+    {{- if .Values.schemaRegistry.antiAffinity }}
+      affinity:
+      {{- if eq .Values.schemaRegistry.antiAffinity "hard" }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: {{ include "kafka-connect.name" . }}
+                  app.kubernetes.io/instance: {{ .Release.Name }}
+                  app.kubernetes.io/component: schemaRegistry
+      {{- else if eq .Values.schemaRegistry.antiAffinity "soft" }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: {{ include "kafka-connect.name" . }}
+                  app.kubernetes.io/instance: {{ .Release.Name }}
+                  app.kubernetes.io/component: schemaRegistry
+      {{- end }}
+    {{- end }}
+    {{- with .Values.schemaRegistry.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.schemaRegistry.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+{{- end }}

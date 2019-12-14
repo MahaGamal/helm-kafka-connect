@@ -1,0 +1,129 @@
+{{- $releasePrefix := include "kafka-connect.releasePrefix" . -}}
+{{- $_ := set $.Release "Prefix" $releasePrefix }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
+apiVersion: apps/v1
+{{- else }}
+apiVersion: apps/v1beta2
+{{- end }}
+kind: Deployment
+metadata:
+  name: {{ include "kafka-connect.fullname" . }}
+  labels:
+    app: {{ include "kafka-connect.name" . }}
+    chart: {{ include "kafka-connect.chart" . }}
+    release: {{ .Release.Name }}
+    helm.sh/chart: {{ include "kafka-connect.chart" . }}
+    app.kubernetes.io/name: {{ include "kafka-connect.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: connect
+spec:
+  replicas: {{ .Values.connect.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "kafka-connect.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: connect
+{{- with .Values.connect.updateStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "kafka-connect.name" . }}
+        chart: {{ include "kafka-connect.chart" . }}
+        release: {{ .Release.Name }}
+        helm.sh/chart: {{ include "kafka-connect.chart" . }}
+        app.kubernetes.io/name: {{ include "kafka-connect.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: connect
+      {{- with .Values.connect.podLabels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.connect.podAnnotations }}
+      annotations:
+      {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    {{- end }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.connect.image }}:{{ .Values.connect.imageTag }}"
+          imagePullPolicy: {{ .Values.connect.imagePullPolicy }}
+        {{- with .Values.connect.command }}
+          command:
+            {{- . | toYaml | nindent 12 }}
+        {{- end }}
+        {{- with .Values.connect.args }}
+          args:
+            {{- . | toYaml | nindent 12 }}
+        {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.connect.servicePort }}
+              protocol: TCP
+        {{- with .Values.connect.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.connect.health.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.connect.health.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+          env:
+          - name: CONNECT_REST_ADVERTISED_HOST_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP   
+          - name: CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL
+            value: {{ include "schemaregistry.url" . | quote }}
+          - name: CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL
+            value: {{ include "schemaregistry.url" . | quote }}
+          - name: KAFKA_HEAP_OPTS
+            value: "{{ .Values.connect.heapOptions }}"
+          {{- range $key, $value := .Values.connect.configurationOverrides }}
+          - name: {{ printf "CONNECT_%s" $key | replace "." "_" | upper | quote }}
+            value: {{ tpl $value $ | quote }}
+          {{- end }}
+          {{- range $key, $value := .Values.connect.customEnv }}
+          - name: {{ $key | quote }}
+            value: {{ tpl $value $ | quote }}
+          {{- end }}
+    {{- if .Values.connect.antiAffinity }}
+      affinity:
+      {{- if eq .Values.connect.antiAffinity "hard" }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: {{ include "kafka-connect.name" . }}
+                  app.kubernetes.io/instance: {{ .Release.Name }}
+                  app.kubernetes.io/component: connect
+      {{- else if eq .Values.connect.antiAffinity "soft" }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: {{ include "kafka-connect.name" . }}
+                  app.kubernetes.io/instance: {{ .Release.Name }}
+                  app.kubernetes.io/component: connect
+      {{- end }}
+    {{- end }}
+    {{- with .Values.connect.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.connect.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
