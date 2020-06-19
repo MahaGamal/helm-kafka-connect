@@ -46,7 +46,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 # Install & Upgrade
 ```sh
 # Assuming Workdir is inside helm chart dir
-helm install --name mychart --namespace <ns>  ./ --set KafkaBootstrapServers=??
+helm install --name mychart --namespace <ns> ./ --set KafkaBootstrapServers=??
 ```
 ```sh
 # Assuming Workdir is inside helm chart dir
