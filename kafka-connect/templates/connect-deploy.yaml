@@ -80,11 +80,23 @@ spec:
           - name: CONNECT_REST_ADVERTISED_HOST_NAME
             valueFrom:
               fieldRef:
-                fieldPath: status.podIP   
+                fieldPath: status.podIP
+          - name: CONNECT_BOOTSTRAP_SERVERS
+            value: "{{ .Values.KafkaBootstrapServers }}"
           - name: CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL
             value: {{ include "schemaregistry.url" . | quote }}
           - name: CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL
             value: {{ include "schemaregistry.url" . | quote }}
+          - name: CONNECT_GROUP_ID
+            value: {{ include "kafka-connect.fullname" . }}
+          - name: CONNECT_CONFIG_STORAGE_TOPIC
+            value: 'connect-configs'
+          - name: CONNECT_OFFSET_STORAGE_TOPIC
+            value: 'connect-offsets'
+          - name: CONNECT_STATUS_STORAGE_TOPIC
+            value: 'connect-status'
+          - name: CONNECT_REST_PORT
+            value: '8083'
           - name: KAFKA_HEAP_OPTS
             value: "{{ .Values.connect.heapOptions }}"
           {{- range $key, $value := .Values.connect.configurationOverrides }}

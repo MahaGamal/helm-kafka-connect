@@ -1,0 +1,23 @@
+{
+  "name":"example-s3-sink",
+  "config": {
+    "name":"example-s3-sink",
+    "connector.class":"io.confluent.connect.s3.S3SinkConnector",
+    "s3.region":"us-east-1",
+    "partition.duration.ms":"3600000",
+    "topics.dir":"input",
+    "flush.size":"298260",
+    "schema.compatibility":"NONE",
+    "file.delim":"_",
+    "tasks.max":"1",
+    "topics":"example-topic",
+    "s3.part.size":"5242880",
+    "format.class":"io.confluent.connect.s3.format.json.JsonFormat",
+    "partitioner.class":"io.confluent.connect.storage.partitioner.TimeBasedPartitioner",
+    "schema.generator.class":"io.confluent.connect.storage.hive.schema.DefaultSchemaGenerator",
+    "storage.class":"io.confluent.connect.s3.storage.S3Storage",
+    "s3.bucket.name":"s3-sink-example",
+    "path.format":"YYYYMMdd",
+    "timestamp.extractor":"Record"
+  }
+}
