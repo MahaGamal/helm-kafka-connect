@@ -78,10 +78,16 @@ spec:
             {{- toYaml . | nindent 12 }}
         {{- end }}
           env:
-            - name: SCHEMA_REGISTRY_ADVERTISED_HOST_NAME
+            - name: SCHEMA_REGISTRY_HOST_NAME
               valueFrom:
                 fieldRef:
-                  fieldPath: status.podIP        
+                  fieldPath: status.podIP  
+            - name: SCHEMA_REGISTRY_LISTENERS
+              value: http://0.0.0.0:{{ .Values.schemaRegistry.servicePort }}
+            - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+              value: "{{ .Values.KafkaBootstrapServers }}"
+            - name: SCHEMA_REGISTRY_MASTER_ELIGIBILITY
+              value: "true"      
             {{- range $key, $value := .Values.schemaRegistry.configurationOverrides }}
             - name: {{ printf "SCHEMA_REGISTRY_%s" $key | replace "." "_" | upper | quote }}
               value: {{ tpl $value $ | quote }}

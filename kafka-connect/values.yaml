@@ -3,6 +3,9 @@
 # nameOverride: ""
 # fullnameOverride: ""
 
+# KAFKA Dependencies URI
+KafkaBootstrapServers: ""
+
 # Configuration for connect deployment
 connect:
   ## Image Info
@@ -24,11 +27,11 @@ connect:
   health:
     readinessProbe:
       httpGet:
-        path: /health
+        path: /connector
         port: http
     livenessProbe:
       httpGet:
-        path: /health
+        path: /connector
         port: http
 
   # Requested resources and limits for the server (Suggested)
@@ -83,16 +86,16 @@ connect:
   ## Kafka Connect properties
   ## ref: https://docs.confluent.io/current/connect/userguide.html#configuring-services
   configurationOverrides:
-    "plugin.path": "/usr/share/java,/usr/share/confluent-hub-components"
+    "plugin.path": "/usr/share/java,/usr/share/kafka-connect-components"
     "key.converter": "io.confluent.connect.avro.AvroConverter"
     "value.converter": "io.confluent.connect.avro.AvroConverter"
     "key.converter.schemas.enable": "false"
     "value.converter.schemas.enable": "false"
     "internal.key.converter": "org.apache.kafka.connect.json.JsonConverter"
     "internal.value.converter": "org.apache.kafka.connect.json.JsonConverter"
-    "config.storage.replication.factor": "3"
-    "offset.storage.replication.factor": "3"
-    "status.storage.replication.factor": "3"
+    "config.storage.replication.factor": "1"
+    "offset.storage.replication.factor": "1"
+    "status.storage.replication.factor": "1"
 
   ## Kafka Connect JVM Heap Option
   heapOptions: "-Xms512M -Xmx512M"
@@ -125,8 +128,8 @@ connect:
 schemaRegistry:
   enabled: true
   
-  image: confluentinc/cp-kafka-connect
-  imageTag: 5.3.1
+  image: confluentinc/cp-schema-registry
+  imageTag: 5.0.0
 
   ## Specify a imagePullPolicy
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
