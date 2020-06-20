@@ -3,9 +3,9 @@ entries:
   kafka-connect:
   - apiVersion: v1
     appVersion: 5.0.0
-    created: "2019-12-14T16:56:56.412302524+02:00"
+    created: "2020-06-20T19:33:50.589537523+02:00"
     description: A Helm chart for kafka connect and schama registry
-    digest: 2152a645e05eb488e27820136e2c9d2614143eafcb2d7e168ad1f3ce7e8b5ec5
+    digest: 39cf147710cbc8bacdedb3cd84432166adc860968898bc7992a6009e8d386b03
     home: https://kafka.apache.org/
     keywords:
     - schema registry
@@ -18,6 +18,6 @@ entries:
     - https://github.com/confluentinc/cp-docker-images
     - https://github.com/apache/kafka
     urls:
-    - https://github.com/MahaGamal/helm-kafka-connect/releases/download/kafka-connect-0.1.0/kafka-connect-0.1.0.tgz
-    version: 0.1.0
-generated: "2019-12-14T16:56:55.495755512+02:00"
+    - https://MahaGamal.github.io/helm-kafka-connect/kafka-connect-0.1.1.tgz
+    version: 0.1.1
+generated: "2020-06-20T19:33:50.589119731+02:00"
