@@ -43,17 +43,22 @@ The following table lists the configurable parameters of the Kafka Connect and s
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
-# Install & Upgrade
+## Install & Upgrade
+To add the chart for your local client, run helm repo add:
+
+```sh 
+$ helm repo add myrepo https://mahagamal.github.io/helm-kafka-connect/
+     "myrepo" has been added to your repositories 
+```
+You can then run `helm search myrepo` to see the charts.
 ```sh
-# Assuming Workdir is inside helm chart dir
-helm install --name mychart --namespace <ns> ./ --set KafkaBootstrapServers=??
+$ helm install --name mychart --namespace <ns> myrepo/kafka-connect --set KafkaBootstrapServers=??
 ```
 ```sh
-# Assuming Workdir is inside helm chart dir
-helm upgrade <ns>-<CHARTNAME> --install --namespace <ns> ./ [--version CHART-VERSION] --debug
+$ helm upgrade <ns>-<CHARTNAME> --install --namespace <ns> myrepo/kafka-connect [--version CHART-VERSION] --debug
 ```
 
-# Connect's REST API
+## Connect's REST API
 Since Kafka Connect is intended to be run as a service, it also supports a REST API for managing connectors. By default this service runs on port `8083`. The following are the currently supported endpoints:
 
 | API                    | description                       |
